@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para mi Princesa Nataly 💖</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary-bg: #ffe6ee;
+            --rose-deep: #c2185b;
+            --rose-main: #ff4081;
+            --rose-soft: #ff80ab;
+            --rose-light: #fff0f5;
+            --gold-accent: #f06292;
+            --paper-bg: #ffffff;
+            --text-dark: #4a1525;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffcdd2 0%, #f8bbd0 50%, #f48fb1 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            color: var(--text-dark);
+            position: relative;
+        }
+
+        /* Ambient floating particles canvas */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Container for central layout */
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        /* Ambient Music Control Button */
+        .music-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 2px solid #ff80ab;
+            color: #c2185b;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 64, 129, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .music-btn:hover, .music-btn:active {
+            background: rgba(255, 255, 255, 0.95);
+            transform: scale(1.05);
+        }
+
+        /* Envelope Component Wrapper */
+        .envelope-wrapper {
+            width: 100%;
+            max-width: 340px;
+            height: 250px;
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+            margin-top: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope-wrapper:hover {
+            transform: translateY(-5px);
+        }
+
+        .envelope {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #f48fb1;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(194, 24, 91, 0.25), 0 0 25px rgba(255, 128, 171, 0.4);
+            transform-style: preserve-3d;
+            border: 2px solid #ff80ab;
+        }
+
+        /* Envelope Flap */
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            border-left: 170px solid transparent;
+            border-right: 170px solid transparent;
+            border-top: 130px solid #ff80ab;
+            transform-origin: top;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.3s, z-index 0.2s 0.4s;
+            z-index: 5;
+            filter: drop-shadow(0 4px 6px rgba(194, 24, 91, 0.15));
+        }
+
+        @media (max-width: 380px) {
+            .envelope-wrapper { max-width: 290px; height: 220px; }
+            .flap { border-left-width: 145px; border-right-width: 145px; border-top-width: 110px; }
+        }
+
+        /* Pocket body of envelope */
+        .pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f06292;
+            clip-path: polygon(0 0, 50% 45%, 100% 0, 100% 100%, 0 100%);
+            border-radius: 16px;
+            z-index: 4;
+        }
+
+        /* Envelope Heart Seal */
+        .heart-seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -20%);
+            z-index: 10;
+            width: 75px;
+            height: 75px;
+            background: linear-gradient(135deg, #ff4081, #e91e63);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            animation: pulseBeat 1.6s infinite ease-in-out;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            border: 2px solid #ffffff;
+        }
+
+        .heart-seal i {
+            color: #fff;
+            font-size: 36px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        @keyframes pulseBeat {
+            0%, 100% { transform: translate(-50%, -20%) scale(1); }
+            50% { transform: translate(-50%, -20%) scale(1.15); box-shadow: 0 8px 30px rgba(255, 64, 129, 0.8); }
+        }
+
+        /* Tap instruction text */
+        .tap-instruction {
+            margin-top: 25px;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.7rem;
+            color: #880e4f;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+            animation: fadeInOut 2s infinite alternate ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* Letter Card Container (Initially hidden inside) */
+        .letter-card {
+            width: 100%;
+            max-width: 460px;
+            background: var(--paper-bg);
+            background-image: radial-gradient(#f8bbd0 0.8px, transparent 0.8px);
+            background-size: 18px 18px;
+            border-radius: 24px;
+            padding: 30px 25px 30px 25px;
+            box-shadow: 0 20px 45px rgba(194, 24, 91, 0.25), 0 0 30px rgba(255, 128, 171, 0.3);
+            border: 3px solid #ff80ab;
+            color: var(--text-dark);
+            position: absolute;
+            top: 0;
+            opacity: 0;
+            transform: translateY(40px) scale(0.9);
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 20;
+        }
+
+        /* Active Letter View State */
+        .envelope-wrapper.open .flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope-wrapper.open .heart-seal {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -20%) scale(0.5);
+        }
+
+        .envelope-wrapper.open ~ .tap-instruction {
+            display: none;
+        }
+
+        .envelope-wrapper.open ~ .letter-card,
+        .letter-card.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        /* Jorge el Curioso Banner & Illustration */
+        .george-container {
+            text-align: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .george-svg {
+            width: 120px;
+            height: 120px;
+            filter: drop-shadow(0 6px 12px rgba(233, 30, 99, 0.2));
+            animation: gentleBounce 2.5s infinite ease-in-out;
+        }
+
+        @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+
+        /* Letter Styling */
+        .letter-header {
+            text-align: center;
+            border-bottom: 2px dashed #f48fb1;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .letter-header h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.9rem;
+            color: var(--rose-deep);
+            line-height: 1.1;
+            margin-bottom: 5px;
+        }
+
+        .letter-header .subtitle {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.3rem;
+            color: #d81b60;
+            font-weight: 700;
+        }
+
+        .letter-body {
+            font-family: 'Lora', serif;
+            font-size: 1.02rem;
+            line-height: 1.85;
+            color: #4a1525;
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        .letter-body p {
+            margin-bottom: 18px;
+            text-indent: 1.5em;
+        }
+
+        .letter-body p:first-of-type {
+            text-indent: 0;
+        }
+
+        .letter-body p:first-of-type::first-letter {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.6rem;
+            float: left;
+            line-height: 0.8;
+            margin-right: 8px;
+            color: var(--rose-main);
+        }
+
+        .highlight {
+            color: var(--rose-deep);
+            font-weight: 600;
+            font-style: italic;
+            background: rgba(255, 128, 171, 0.15);
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        .letter-footer {
+            margin-top: 30px;
+            text-align: center;
+            border-top: 2px dashed #f48fb1;
+            padding-top: 20px;
+        }
+
+        .signature {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.3rem;
+            color: var(--rose-deep);
+            margin-top: 5px;
+        }
+
+        /* Love Action Button */
+        .action-btn {
+            margin-top: 25px;
+            background: linear-gradient(135deg, #ff4081 0%, #c2185b 100%);
+            color: #fff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .action-btn:hover, .action-btn:active {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(233, 30, 99, 0.6);
+            background: linear-gradient(135deg, #ff80ab 0%, #d81b60 100%);
+        }
+
+        /* Footer Copyright / Note */
+        .footer-note {
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: #880e4f;
+            font-weight: 500;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient floating hearts canvas -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Audio toggle button -->
+    <button class="music-btn" id="musicToggle" aria-label="Reproducir música">
+        <i class="fa-solid fa-music"></i>
+        <span id="musicText">Música de Fondo</span>
+    </button>
+
+    <!-- Custom Audio Player Panel -->
+    <div class="audio-panel-card" id="audioPanel" style="display: none; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: 2px solid #ff80ab; border-radius: 20px; padding: 15px 20px; width: 90%; max-width: 440px; margin: 15px auto 0; box-shadow: 0 10px 25px rgba(233,30,99,0.2); z-index: 50; text-align: center;">
+        <div style="font-family: 'Dancing Script', cursive; font-size: 1.4rem; color: #c2185b; font-weight: 700; margin-bottom: 8px;">
+            <i class="fa-solid fa-compact-disc fa-spin" style="--fa-animation-duration: 4s;"></i> Nuestra Canción Especial
+        </div>
+        
+        <!-- Native Audio element for MP3 -->
+        <audio id="customAudio" src="cancion.mp3" loop preload="auto" style="display: none;"></audio>
+        
+        <!-- Controls UI -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px;">
+            <button id="playPauseBtn" style="background: linear-gradient(135deg, #ff4081, #c2185b); border: none; color: white; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 4px 10px rgba(233,30,99,0.4);">
+                <i class="fa-solid fa-play" id="playIcon"></i>
+            </button>
+            
+            <div style="display: flex; align-items: center; gap: 6px; color: #880e4f; font-size: 0.85rem; font-weight: 500;">
+                <i class="fa-solid fa-volume-high"></i>
+                <input type="range" id="volumeControl" min="0" max="1" step="0.05" value="0.2" style="accent-color: #ff4081; width: 80px; cursor: pointer;">
+            </div>
+        </div>
+
+        <!-- Custom Audio Input Actions -->
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center;">
+            <label for="audioFileInput" style="background: #fff0f5; border: 1.5px dashed #ff4081; color: #c2185b; padding: 6px 12px; border-radius: 15px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-file-audio"></i> Cargar MP3 local
+                <input type="file" id="audioFileInput" accept="audio/*" style="display: none;">
+            </label>
+            <span id="fileNameDisplay" style="font-size: 0.75rem; color: #d81b60; font-weight: 500; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">canción.mp3</span>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <!-- Envelope Stage -->
+        <div class="envelope-wrapper" id="envelopeWrapper">
+            <div class="envelope">
+                <div class="flap"></div>
+                <div class="pocket"></div>
+                <div class="heart-seal" id="heartSeal">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="tap-instruction" id="tapText">
+            <i class="fa-solid fa-sparkles"></i> Toca el corazón para abrir mi carta <i class="fa-solid fa-sparkles"></i>
+        </div>
+
+        <!-- Interactive Letter Paper -->
+        <div class="letter-card" id="letterCard">
+            
+            <!-- Ilustración Vectorial Tierna de Jorge el Curioso sosteniendo un Corazón Rosado -->
+            <div class="george-container">
+                <svg class="george-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Sombra -->
+                    <ellipse cx="100" cy="185" rx="55" ry="10" fill="#f48fb1" opacity="0.5"/>
+                    
+                    <!-- Cuerpo de Jorge el Curioso -->
+                    <!-- Orejas -->
+                    <circle cx="58" cy="75" r="16" fill="#8d5b4c"/>
+                    <circle cx="58" cy="75" r="10" fill="#d7ccc8"/>
+                    <circle cx="142" cy="75" r="16" fill="#8d5b4c"/>
+                    <circle cx="142" cy="75" r="10" fill="#d7ccc8"/>
+                    
+                    <!-- Cabeza -->
+                    <circle cx="100" cy="75" r="42" fill="#8d5b4c"/>
+                    
+                    <!-- Cara interna -->
+                    <path d="M 72 70 C 72 50, 88 48, 100 58 C 112 48, 128 50, 128 70 C 128 92, 115 100, 100 100 C 85 100, 72 92, 72 70 Z" fill="#f5ddc3"/>
+                    
+                    <!-- Ojos chinitos / alegres de monito -->
+                    <ellipse cx="86" cy="68" rx="4" ry="6" fill="#3e2723"/>
+                    <ellipse cx="114" cy="68" rx="4" ry="6" fill="#3e2723"/>
+                    <circle cx="87" cy="66" r="1.5" fill="#ffffff"/>
+                    <circle cx="115" cy="66" r="1.5" fill="#ffffff"/>
+                    
+                    <!-- Nariz -->
+                    <ellipse cx="100" cy="77" rx="3.5" ry="2.5" fill="#5d4037"/>
+                    
+                    <!-- Sonrisa grande y tierna -->
+                    <path d="M 88 84 Q 100 95 112 84" fill="none" stroke="#5d4037" stroke-width="2.5" stroke-linecap="round"/>
+                    
+                    <!-- Mejillas rosadas -->
+                    <ellipse cx="78" cy="80" rx="6" ry="4" fill="#ff80ab" opacity="0.6"/>
+                    <ellipse cx="122" cy="80" rx="6" ry="4" fill="#ff80ab" opacity="0.6"/>
+
+                    <!-- Cuerpo y Brazos sosteniendo el corazón -->
+                    <path d="M 80 110 L 80 165 C 80 172, 120 172, 120 165 L 120 110 Z" fill="#8d5b4c"/>
+                    
+                    <!-- Gran Corazón Rosado en el pecho -->
+                    <g transform="translate(100, 132) scale(0.95)">
+                        <path d="M 0 -10 C -25 -35, -45 -10, 0 30 C 45 -10, 25 -35, 0 -10 Z" fill="url(#pinkHeartGrad)"/>
+                        <!-- Destello en el corazón -->
+                        <ellipse cx="-10" cy="-12" rx="6" ry="3" fill="#ffffff" opacity="0.6" transform="rotate(-30 -10 -12)"/>
+                    </g>
+                    
+                    <!-- Brazos rodeando el corazón -->
+                    <path d="M 68 112 Q 72 135 84 134" fill="none" stroke="#8d5b4c" stroke-width="12" stroke-linecap="round"/>
+                    <path d="M 132 112 Q 128 135 116 134" fill="none" stroke="#8d5b4c" stroke-width="12" stroke-linecap="round"/>
+
+                    <defs>
+                        <linearGradient id="pinkHeartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ff4081"/>
+                            <stop offset="100%" stop-color="#c2185b"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+
+            <div class="letter-header">
+                <h1>Para mi Princesa Nataly</h1>
+                <div class="subtitle">Nuestra Coreografía del Destino 💕</div>
+            </div>
+
+            <div class="letter-body">
+                <p>
+                    Había una vez un salón donde la salsa y la bachata marcaban el ritmo de las tardes, el aire solía llenarse de música, risas y pasos repetidos en el suelo. Pero para él, entre todas las miradas y movimientos del lugar, el verdadero centro de atención siempre fue ella. Desde el primer día la notó. Era imposible no fijarse en su presencia: en la calidez única de sus ojos chinitos al sonreír, en la suavidad de su piel y en la dulzura irresistible de sus labios. Pero, sobre todo, había algo en sus mejillas que lo cautivaba por completo: un caminito de diminutas pecas que parecían pequeñas constelaciones dibujadas a medida. Durante un tiempo, él se limitó a admirarla a la distancia, entre giro y giro, sin imaginar que muy pronto sus vidas cambiarían para siempre.
+                </p>
+                <p>
+                    El día menos pensado, la profesora los emparejó para practicar una nueva coreografía. Ese día, impulsado por una corazonada, él se había aplicado su mejor perfume antes de salir. Cuando la música empezó a sonar y sus manos se unieron por primera vez para marcar el ritmo, el tiempo pareció detenerse. La fragancia de él no solo impregnó la piel de sus manos al entrelazar los dedos, sino que se convirtió en una chispa sutil que lo cambió todo. A ella le encantó ese detalle, y ese pequeño aroma se volvió el pase directo a su atención. A partir de esa tarde, las miradas no solo se cruzaban, sino que se buscaban con intención, y la música dejó de sonar en el salón para empezar a resonar dentro de sus corazones.
+                </p>
+                <p>
+                    Lo que vino después no se puede explicar con lógica humana. En solo dos semanas de conversación, todo fluyó con una ligereza y una intensidad maravillosas. No hicieron falta meses ni años para reconocerse; cada día que pasaba, el amor crecía a pasos agigantados. Se dieron cuenta de que no había sido simple suerte: <span class="highlight">fueron Dios y el destino los que unieron sus caminos en el momento perfecto</span>. Con el pasar de las horas y los mensajes, él descubrió que su belleza exterior era solo la portada de un ser extraordinario. Conoció a una mujer atenta, cariñosa, profundamente divertida y con una ternura tan dulce que transformó su mundo entero. De repente, ambos descubrieron que se habían convertido en el todo del otro. Para él, ella dejó de ser solo una compañera de baile para convertirse en su princesa y en la persona más importante de su vida.
+                </p>
+                <p>
+                    Hoy, tomados de la mano y con el corazón lleno de certeza, miran juntos hacia el mismo horizonte. Comparten la ilusión de crecer hombro a hombro, de apoyarse incondicionalmente en sus carreras profesionales hasta convertirse en la mejor versión de sí mismos y triunfar en cada meta laboral que se propongan. Saben que este es solo el hermoso comienzo de un libro que recién empiezan a escribir. Sueñan con consolidar paso a paso este camino: disfrutando su etapa juntos, caminando más adelante hacia el altar como esposos y, con el tiempo, construyendo un hogar cálido y bendecido donde las risas de sus hijos sean el reflejo de este amor.
+                </p>
+                <p>
+                    Porque si algo tiene claro él en lo más profundo de su alma, es que cuando Dios cruza a dos personas de esta manera, no importa cuántas canciones pasen ni qué ritmos depare el futuro: su promesa más sincera será siempre amar, cuidar y bailar la vida entera al lado de su princesa.
+                </p>
+            </div>
+
+            <div class="letter-footer">
+                <div style="font-size: 0.95rem; color: #880e4f; font-weight: 500;">Con todo mi amor y mi corazón entero,</div>
+                <div class="signature">Tu Coquito ❤️</div>
+
+                <button class="action-btn" id="loveBtn">
+                    <i class="fa-solid fa-heart-pulse"></i> ¡Te Amo, mi Princesa! ❤️
+                </button>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Hecho con todo el amor del mundo para Nataly 🐒💖
+        </div>
+    </div>
+
+    <script>
+        /* ===================================================
+           1. FLOATING PARTICLES CANVAS (PINK HEARTS & SPARKLES)
+        =================================================== */
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const particleCount = window.innerWidth < 500 ? 30 : 50;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.size = Math.random() * 14 + 6;
+                this.speedY = Math.random() * 1.2 + 0.5;
+                this.speedX = Math.sin(Math.random() * Math.PI) * 0.8;
+                this.opacity = Math.random() * 0.7 + 0.3;
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = (Math.random() - 0.5) * 1.5;
+                this.color = ['#ff80ab', '#ff4081', '#f48fb1', '#ffffff', '#ff80ab'][Math.floor(Math.random() * 5)];
+                this.isHeart = Math.random() > 0.25;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += Math.sin(this.y * 0.01) * 0.5;
+                this.rotation += this.rotSpeed;
+
+                if (this.y < -20) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+
+                if (this.isHeart) {
+                    // Draw Pink Mini Heart
+                    ctx.beginPath();
+                    const topCurveHeight = this.size * 0.3;
+                    ctx.moveTo(0, topCurveHeight);
+                    ctx.bezierCurveTo(0, 0, -this.size / 2, 0, -this.size / 2, topCurveHeight);
+                    ctx.bezierCurveTo(-this.size / 2, (this.size + topCurveHeight) / 2, 0, this.size, 0, this.size);
+                    ctx.bezierCurveTo(0, this.size, this.size / 2, (this.size + topCurveHeight) / 2, this.size / 2, topCurveHeight);
+                    ctx.bezierCurveTo(this.size / 2, 0, 0, 0, 0, topCurveHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // Draw Sparkle Circle
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size / 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+
+        /* ===================================================
+           2. ENVELOPE & LETTER INTERACTION LOGIC
+        =================================================== */
+        const envelopeWrapper = document.getElementById('envelopeWrapper');
+        const heartSeal = document.getElementById('heartSeal');
+        const letterCard = document.getElementById('letterCard');
+        const tapText = document.getElementById('tapText');
+        const loveBtn = document.getElementById('loveBtn');
+
+        let isOpen = false;
+
+        function openLetter() {
+            if (isOpen) return;
+            isOpen = true;
+
+            envelopeWrapper.classList.add('open');
+            
+            // Trigger romantic confetti when opening
+            setTimeout(() => {
+                triggerRomanticConfetti();
+            }, 600);
+
+            // Hide envelope wrapper after transition and make letter full focus
+            setTimeout(() => {
+                envelopeWrapper.style.display = 'none';
+                tapText.style.display = 'none';
+                letterCard.classList.add('visible');
+                // Scroll smoothly to top of letter
+                letterCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 1000);
+
+            // Start ambient music automatically if allowed
+            startAmbientMusic();
+        }
+
+        envelopeWrapper.addEventListener('click', openLetter);
+        heartSeal.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openLetter();
+        });
+
+
+        /* ===================================================
+           3. CONFETTI EFFECT ON BUTTON CLICK
+        =================================================== */
+        function triggerRomanticConfetti() {
+            if (typeof confetti === 'function') {
+                // Pink Heart shape confetti blast
+                confetti({
+                    particleCount: 70,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#ff4081', '#ff80ab', '#f48fb1', '#ffffff', '#e91e63'],
+                    shapes: ['square'],
+                    scalar: 1.3
+                });
+            }
+        }
+
+        loveBtn.addEventListener('click', () => {
+            triggerRomanticConfetti();
+            
+            // Extra bursts
+            setTimeout(() => {
+                confetti({
+                    particleCount: 40,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 }
+                });
+            }, 200);
+
+            setTimeout(() => {
+                confetti({
+                    particleCount: 40,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 }
+                });
+            }, 400);
+        });
+
+
+        /* ===================================================
+           4. CUSTOM MP3 & AUDIO PLAYER LOGIC
+        =================================================== */
+        const customAudio = document.getElementById('customAudio');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const volumeControl = document.getElementById('volumeControl');
+        const audioFileInput = document.getElementById('audioFileInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const audioPanel = document.getElementById('audioPanel');
+        const musicToggle = document.getElementById('musicToggle');
+        const musicText = document.getElementById('musicText');
+
+        customAudio.volume = Number(volumeControl.value);
+
+        let isCustomAudioPlaying = false;
+
+        // Toggle Audio Panel display
+        musicToggle.addEventListener('click', () => {
+            if (audioPanel.style.display === 'none' || !audioPanel.style.display) {
+                audioPanel.style.display = 'block';
+                audioPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                audioPanel.style.display = 'none';
+            }
+        });
+
+        // Load custom local MP3 file
+        audioFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const fileURL = URL.createObjectURL(file);
+                customAudio.src = fileURL;
+                fileNameDisplay.textContent = file.name;
+                playCustomAudio();
+            }
+        });
+
+        // Play/Pause button controller
+        playPauseBtn.addEventListener('click', () => {
+            if (isCustomAudioPlaying) {
+                pauseCustomAudio();
+            } else {
+                playCustomAudio();
+            }
+        });
+
+        function playCustomAudio() {
+            // Fallback synthesized melody if no custom file loaded yet
+            if (!customAudio.src) {
+                startAmbientMusicSynthesizer();
+                return;
+            }
+
+            customAudio.play().then(() => {
+                isCustomAudioPlaying = true;
+                playIcon.className = 'fa-solid fa-pause';
+                musicText.textContent = 'Sonando ♪';
+                musicToggle.style.background = 'rgba(255, 128, 171, 0.4)';
+            }).catch(err => {
+                console.log("Play error: ", err);
+                // Fallback synth
+                startAmbientMusicSynthesizer();
+            });
+        }
+
+        function pauseCustomAudio() {
+            if (customAudio.src) {
+                customAudio.pause();
+            }
+            if (synthIsPlaying) {
+                stopAmbientMusicSynthesizer();
+            }
+            isCustomAudioPlaying = false;
+            playIcon.className = 'fa-solid fa-play';
+            musicText.textContent = 'Música de Fondo';
+            musicToggle.style.background = 'rgba(255, 255, 255, 0.7)';
+        }
+
+        // Volume control
+        volumeControl.addEventListener('input', (e) => {
+            customAudio.volume = e.target.value;
+            if (masterGain) {
+                masterGain.gain.setValueAtTime(e.target.value * 0.15, audioCtx.currentTime);
+            }
+        });
+
+        function startAmbientMusic() {
+            if (!isCustomAudioPlaying) {
+                playCustomAudio();
+            }
+        }
+
+        /* Ambient Web Audio API Synthesizer (Fallback background melody) */
+        let audioCtx = null;
+        let synthIsPlaying = false;
+        let masterGain = null;
+
+        function startAmbientMusicSynthesizer() {
+            if (synthIsPlaying) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                masterGain = audioCtx.createGain();
+                masterGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+                masterGain.gain.exponentialRampToValueAtTime(volumeControl.value * 0.15, audioCtx.currentTime + 2);
+                masterGain.connect(audioCtx.destination);
+
+                const freqs = [174.61, 220.00, 261.63, 329.63, 392.00];
+                freqs.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = index % 2 === 0 ? 'sine' : 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    osc.detune.setValueAtTime((index - 2) * 4, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    osc.connect(gain);
+                    gain.connect(masterGain);
+                    osc.start();
+                });
+
+                synthIsPlaying = true;
+                isCustomAudioPlaying = true;
+                playIcon.className = 'fa-solid fa-pause';
+                musicText.textContent = "Melodía Sonando ♪";
+                musicToggle.style.background = "rgba(255, 128, 171, 0.4)";
+            } catch (e) {
+                console.log("Audio block", e);
+            }
+        }
+
+        function stopAmbientMusicSynthesizer() {
+            if (!synthIsPlaying || !masterGain) return;
+            masterGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
+            setTimeout(() => {
+                if (audioCtx) audioCtx.suspend();
+                synthIsPlaying = false;
+            }, 800);
+        }
+    </script>
+</body>
+</html>
